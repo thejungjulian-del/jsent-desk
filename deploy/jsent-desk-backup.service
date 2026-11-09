@@ -1,0 +1,8 @@
+[Unit]
+Description=Back up the JS Entertainment desk SQLite database (timestamped, keeps last 7)
+
+[Service]
+Type=oneshot
+User=YOUR_USER
+WorkingDirectory=/opt/jsent-desk
+ExecStart=/usr/bin/env bash /opt/jsent-desk/deploy/backup.sh

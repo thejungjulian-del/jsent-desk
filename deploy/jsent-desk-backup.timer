@@ -1,0 +1,10 @@
+[Unit]
+Description=Daily JS Entertainment desk database backup at 03:00 California time (auto DST)
+
+[Timer]
+# 3 AM Pacific every day — off-peak, before the morning scan.
+OnCalendar=*-*-* 03:00:00 America/Los_Angeles
+Persistent=true
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,142 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>{% if token %}Join {{ group_name }} · JS ENTERTAINMENT®{% else %}Invite not found{% endif %}</title>
+<style>
+  /* JS ENTERTAINMENT — paper edition. */
+  :root{ --paper:#f5f5f3; --paper-2:#efefec;
+         --ink:#0b0b0c; --muted:#4c4e50; --faint:#8a8c8e;
+         --bg:#f5f5f3; --line:rgba(11,11,12,.16); --line-strong:#0b0b0c; --hover:#efefec;
+         --rule:rgba(11,11,12,.07); --rule-2:rgba(11,11,12,.16);
+         --mono:"SF Mono",ui-monospace,"Roboto Mono",Menlo,monospace;
+         --grot:"Helvetica Neue",Inter,Arial,sans-serif; --cols:9; }
+  *{box-sizing:border-box}
+  body{margin:0;font:16px/1.55 var(--grot);color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+  .wrap{max-width:440px;margin:0 auto;padding:52px 22px 64px}
+  .brand{font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);margin-bottom:26px}
+  h1{font-size:29px;font-weight:700;margin:0 0 7px;letter-spacing:-.035em}
+  h2,h3,h4,h5{font-weight:400}
+  b,strong{font-weight:500}
+  .sub{color:var(--muted);font-size:15px;line-height:1.5;margin-bottom:26px}
+  label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin:18px 0 6px}
+  label .opt{text-transform:none;letter-spacing:0;color:var(--faint)}
+  input{width:100%;font:inherit;font-size:16px;border:1px solid var(--line);border-radius:0;padding:12px 13px;color:var(--ink)}
+  input:focus{outline:none;border-color:var(--ink)}
+  .hint{font-size:12px;color:var(--faint);margin-top:5px}
+  .seg{display:flex;gap:8px}
+  .seg button{flex:1;font:inherit;font-size:15px;padding:11px;border:1px solid var(--line);border-radius:0;background:var(--paper);color:var(--ink);cursor:pointer}
+  .seg button.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .go{width:100%;margin-top:26px;font:inherit;font-size:16px;font-weight:500;padding:14px;border:0;border-radius:0;background:var(--ink);color:var(--paper);cursor:pointer}
+  .go:disabled{opacity:.5}
+  .err{color:#b00020;font-size:14px;margin-top:13px;min-height:18px}
+  .bad{max-width:440px;margin:0 auto;text-align:center;padding:96px 24px;color:var(--muted)}
+  .bad h1{margin-bottom:10px}
+  .chk{display:flex;align-items:center;gap:9px;font-size:15px;text-transform:none;letter-spacing:0;color:var(--ink);margin:8px 0;cursor:pointer}
+  .chk input{width:16px;height:16px}
+  .soon{font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--faint);border:1px solid var(--line);border-radius:0;padding:2px 6px;margin-left:5px}
+  .platgrid{display:flex;flex-direction:column;gap:8px;margin:6px 0}
+  .plat{border:1px solid var(--line);border-radius:0;overflow:hidden}
+  .plat-h{width:100%;display:flex;justify-content:space-between;align-items:center;background:none;border:0;padding:12px 13px;font:inherit;font-size:15px;color:var(--ink);cursor:pointer;text-align:left}
+  .plat .chev{opacity:.45;font-size:12px;transition:transform .15s}
+  .plat.open .chev{transform:rotate(180deg)}
+  .plat-body{display:none;flex-direction:column;padding:2px 14px 13px}
+  .plat.open .plat-body{display:flex}
+  .plat-ex-wrap{margin-top:9px;padding-top:9px;border-top:1px solid var(--line)}
+  .plat-ex-lab{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:5px}
+  .plat-ex{width:100%}
+
+  .grid{position:fixed;inset:0;z-index:0;pointer-events:none;
+    background-image:linear-gradient(to right,var(--rule) 0 1px,transparent 1px);
+    background-size:calc(100% / var(--cols)) 100%}
+  .grain{position:fixed;inset:0;z-index:70;pointer-events:none;opacity:.26;mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.4'/%3E%3C/svg%3E")}
+  .wrap{position:relative;z-index:1}
+  ::selection{background:var(--ink);color:var(--paper)}
+  .kicker,.section-label,.lab,.brand{font-family:var(--mono);letter-spacing:.2em}
+  a:focus-visible,button:focus-visible,input:focus-visible{outline:1.5px solid var(--ink);outline-offset:3px}
+</style>
+</head>
+<body>
+<div class="grid"></div>
+{% if not token %}
+  <div class="bad">
+    <div class="brand">JS Entertainment®</div>
+    <h1>Invite not found</h1>
+    <p>This signup link is no longer valid. Ask your manager for a fresh one.</p>
+  </div>
+{% else %}
+<div class="wrap">
+  <div class="brand">JS Entertainment®</div>
+  <h1>Join {{ group_name }}</h1>
+  <div class="sub">Set up your creator account. You'll get a daily read on what to film in your niche, plus your own brand-deal inbox.</div>
+
+  <label>Your name</label>
+  <input id="name" placeholder="e.g. Julian" autocomplete="name">
+
+  <label>You are</label>
+  <div class="seg" id="gender">
+    <button type="button" data-g="man">Man</button>
+    <button type="button" data-g="woman">Woman</button>
+  </div>
+  <div class="hint">So your trends stay in your lane.</div>
+
+  <label>Platforms, content &amp; who you post like</label>
+  <div class="platgrid" id="plats"></div>
+  <div class="hint">Open each platform you're on, tick your content types, and add the accounts you post like on it — add at least one creator for each field of interest. Comma separated. Formats marked "soon" aren't collecting data yet.</div>
+
+  <label>Set a password <span class="opt">(optional)</span></label>
+  <input id="password" type="password" placeholder="Locks your page to just you" autocomplete="new-password">
+
+  <button class="go" id="go">Create my account</button>
+  <div class="err" id="err"></div>
+</div>
+<script>
+  let gender = "";
+  document.querySelectorAll("#gender button").forEach(b => b.onclick = () => {
+    gender = b.dataset.g;
+    document.querySelectorAll("#gender button").forEach(x => x.classList.toggle("on", x === b));
+  });
+  const PLATFORMS=[
+    {name:"Instagram",subs:[["reels","Reels"],["post","Posts"]]},
+    {name:"TikTok",subs:[["tiktok","Videos",true]]},
+    {name:"YouTube",subs:[["yt_long","Long-form"],["yt_short","Shorts"],["yt_live","Streaming",true]]},
+    {name:"Twitch",subs:[["stream","Streaming"]]},
+  ];
+  const EX_EG={instagram:"e.g. username1, username2",tiktok:"e.g. username1, username2",youtube:"e.g. channel1, channel2",twitch:"e.g. streamer1, streamer2"};
+  document.getElementById("plats").innerHTML = PLATFORMS.map(p=>{
+    const key=p.name.toLowerCase();
+    const body=p.subs.map(s=>`<label class="chk"><input type="checkbox" class="fmt" value="${s[0]}"> ${s[1]}${s[2]?' <span class="soon">soon</span>':''}</label>`).join("");
+    const ex=`<div class="plat-ex-wrap"><label class="plat-ex-lab">Accounts you post like on ${p.name}</label><input type="text" class="plat-ex" id="ex-${key}" placeholder="${EX_EG[key]}"></div>`;
+    return `<div class="plat"><button type="button" class="plat-h" onclick="this.parentElement.classList.toggle('open')">${p.name}<span class="chev">▾</span></button><div class="plat-body">${body}${ex}</div></div>`;
+  }).join("");
+  const v = id => (document.getElementById(id).value || "").trim();
+  async function submit(){
+    const err = document.getElementById("err");
+    if(!v("name")){ err.textContent = "Please enter your name."; return; }
+    const PLATS=["instagram","tiktok","youtube","twitch"];
+    const exByPlat={}; let allEx=[];
+    PLATS.forEach(p=>{
+      const arr=v("ex-"+p).split(/[, ]+/).map(s=>s.trim().replace(/^@/,"")).filter(Boolean);
+      if(arr.length) exByPlat[p]=arr; allEx=allEx.concat(arr);
+    });
+    if(!allEx.length){ err.textContent = "Add at least one account you post like."; return; }
+    const formats=[...document.querySelectorAll(".fmt:checked")].map(c=>c.value);
+    if(!formats.length){ err.textContent = "Pick at least one content type."; return; }
+    const go = document.getElementById("go");
+    go.disabled = true; go.textContent = "Creating…"; err.textContent = "";
+    let r;
+    try {
+      r = await (await fetch(location.pathname, {method: "POST", headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({name: v("name"), gender, examples_by_platform: exByPlat, formats, password: v("password")})})).json();
+    } catch(e) { r = {error: "Something went wrong — please try again."}; }
+    if(r.url){ location.href = r.url; }
+    else { go.disabled = false; go.textContent = "Create my account"; err.textContent = r.error || "Couldn't create your account."; }
+  }
+  document.getElementById("go").onclick = submit;
+</script>
+{% endif %}
+<div class="grain"></div>
+</body>
+</html>

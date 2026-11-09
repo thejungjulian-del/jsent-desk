@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JS ENTERTAINMENT®</title>
+<meta name="robots" content="noindex, nofollow">
+<style>
+/* ============================================================
+   JS ENTERTAINMENT — desk access, paper edition.
+   Same tokens as the public site: white majority, black accents,
+   hairline construction grid, crop marks, grain, one logotype.
+   ============================================================ */
+:root{
+  --paper:#f5f5f3;
+  --paper-2:#efefec;
+  --ink:#0b0b0c;
+  --ink-2:#4c4e50;
+  --ink-3:#8a8c8e;
+  --ink-4:#b9bbbc;
+  --rule:rgba(11,11,12,.07);
+  --rule-2:rgba(11,11,12,.16);
+  --pad:clamp(18px,3.6vw,44px);
+  --mono:"SF Mono",ui-monospace,"Roboto Mono",Menlo,monospace;
+  --grot:"Helvetica Neue",Inter,Arial,sans-serif;
+  --cols:9;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:var(--paper);color:var(--ink);font-family:var(--grot);
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+  min-height:100svh;overflow-x:hidden;
+}
+::selection{background:var(--ink);color:var(--paper)}
+
+/* the construction grid — one layer, at the very back */
+.grid{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:linear-gradient(to right,var(--rule) 0 1px,transparent 1px);
+  background-size:calc(100% / var(--cols)) 100%;
+}
+/* grain, multiplied onto the paper */
+.grain{
+  position:fixed;inset:0;z-index:60;pointer-events:none;opacity:.30;
+  mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.4'/%3E%3C/svg%3E");
+}
+
+/* corner marginalia */
+.marg{
+  position:fixed;z-index:6;font-family:var(--mono);font-size:8.5px;
+  letter-spacing:.19em;text-transform:uppercase;color:var(--ink-2);line-height:1.85;
+  pointer-events:none;
+}
+.marg.tl{top:var(--pad);left:var(--pad)}
+.marg.tr{top:var(--pad);right:var(--pad);text-align:right}
+.marg.bl{bottom:var(--pad);left:var(--pad);display:flex;align-items:flex-end;gap:9px}
+.marg.bl .big{font-family:var(--grot);font-weight:700;font-size:30px;letter-spacing:-.03em;
+  line-height:.78;color:var(--ink)}
+.marg.br{bottom:var(--pad);right:var(--pad);text-align:right}
+@media(max-width:700px){.marg.tr,.marg.br{display:none}}
+
+/* the sheet — crop marks box the form, exactly like the hero boxes the subject */
+.sheet{
+  position:relative;z-index:2;min-height:100svh;
+  display:flex;align-items:center;justify-content:center;padding:var(--pad);
+}
+.crop{position:absolute;inset:0;z-index:1;pointer-events:none}
+.crop i{position:absolute;background:var(--rule-2)}
+.crop i.v{top:0;bottom:0;width:1px}
+.crop i.h{left:0;right:0;height:1px}
+
+.box{position:relative;z-index:2;width:360px;max-width:100%}
+
+/* the logotype — ® hangs outside the box so the WORDMARK is what centres,
+   not wordmark-plus-mark (otherwise the type reads as sitting left of centre) */
+.lock{text-align:center;margin-bottom:38px}
+.lock h1{
+  font-weight:700;font-size:clamp(26px,6vw,36px);letter-spacing:-.045em;line-height:.9;
+  display:inline-block;white-space:nowrap;position:relative;
+}
+.lock h1 sup{
+  position:absolute;left:100%;top:.06em;font-size:.24em;letter-spacing:0;
+  margin-left:.06em;font-weight:400;
+}
+.lock .kick{
+  font-family:var(--mono);font-size:8.5px;letter-spacing:.34em;text-transform:uppercase;
+  color:var(--ink-3);margin-top:12px;
+}
+
+/* the field */
+label{
+  display:block;font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--ink-3);margin:0 0 9px;
+}
+input{
+  width:100%;font:inherit;font-size:15px;color:var(--ink);background:transparent;
+  border:0;border-bottom:1px solid var(--rule-2);border-radius:0;
+  padding:11px 2px;transition:border-color .25s;
+}
+input:focus{outline:none;border-bottom-color:var(--ink)}
+input::placeholder{color:var(--ink-4)}
+
+button{
+  width:100%;margin-top:26px;font:inherit;font-size:11.5px;letter-spacing:.14em;
+  text-transform:uppercase;background:var(--ink);color:var(--paper);
+  border:1px solid var(--ink);border-radius:0;padding:14px;cursor:pointer;
+  transition:opacity .18s,transform .08s;
+}
+button:hover{opacity:.86}
+button:active{transform:translateY(1px)}
+
+/* keyboard focus — the public site was missing this entirely, don't repeat it */
+/* Buttons/links get a ring. The password field must NOT — a text input always
+   matches :focus-visible while focused, and with autofocus the ring drew a
+   permanent box around the field, contradicting the hairline-underline design.
+   Its focus indicator is the underline going solid ink at double weight. */
+a:focus-visible,button:focus-visible{outline:1.5px solid var(--ink);outline-offset:3px}
+input:focus-visible{outline:none}
+input:focus{border-bottom-color:var(--ink);box-shadow:0 1px 0 0 var(--ink)}
+
+.err{
+  font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink);border:1px solid var(--ink);padding:10px 12px;margin-top:18px;text-align:center;
+}
+.foot{
+  font-family:var(--mono);font-size:8.5px;letter-spacing:.19em;text-transform:uppercase;
+  color:var(--ink-4);margin-top:30px;text-align:center;line-height:1.9;
+  border-top:1px solid var(--rule-2);padding-top:18px;
+}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="grid"></div>
+
+<div class="marg tl">JS Entertainment®<br>Internal</div>
+<div class="marg tr">Access<br>Restricted</div>
+
+<main class="sheet">
+  <div class="crop">
+    <i class="v" style="left:12%"></i><i class="v" style="right:12%"></i>
+    <i class="h" style="top:18%"></i><i class="h" style="bottom:18%"></i>
+  </div>
+
+  <form class="box" method="post" action="/login">
+    <div class="lock">
+      <h1>JS ENTERTAINMENT<sup>®</sup></h1>
+      <div class="kick">Intelligence Desk</div>
+    </div>
+
+    <label for="password">Password</label>
+    <input type="password" id="password" name="password" autofocus autocomplete="current-password">
+    <button type="submit">Enter</button>
+
+    {% if error %}<div class="err">Not recognised — try again</div>{% endif %}
+
+    <div class="foot">
+      Authorised personnel<br>
+      Creator links do not require access
+    </div>
+  </form>
+</main>
+
+<div class="marg bl"><span class="big">00</span><span>Desk<br>Access</span></div>
+<div class="marg br">https//:jsentertainment.co</div>
+
+<div class="grain"></div>
+</body>
+</html>

@@ -1,0 +1,12 @@
+[Unit]
+Description=JS Entertainment desk daily scan (all creators)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=YOUR_USER
+Group=YOUR_USER
+WorkingDirectory=/opt/jsent-desk
+EnvironmentFile=/opt/jsent-desk/jsent.env
+ExecStart=/opt/jsent-desk/.venv/bin/python3 /opt/jsent-desk/scan_all.py

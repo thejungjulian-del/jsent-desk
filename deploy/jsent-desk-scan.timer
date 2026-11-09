@@ -1,0 +1,10 @@
+[Unit]
+Description=Run JS Entertainment desk scan once daily at 09:00 California time (auto DST)
+
+[Timer]
+# 9 AM Pacific every day; America/Los_Angeles handles PST/PDT automatically.
+OnCalendar=*-*-* 09:00:00 America/Los_Angeles
+Persistent=true
+
+[Install]
+WantedBy=timers.target

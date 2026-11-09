@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JS ENTERTAINMENT®</title>
+<meta name="robots" content="noindex, nofollow">
+<style>
+  /* ============================================================
+     JS ENTERTAINMENT — the desk, paper edition.
+     Same tokens as the public site. The old names (--bg, --line,
+     --hover) are kept and remapped so every existing rule below
+     inherits the new palette without being rewritten.
+     ============================================================ */
+  :root{
+    --paper:#f5f5f3; --paper-2:#efefec;
+    --ink:#0b0b0c; --muted:#4c4e50; --faint:#8a8c8e;
+    --bg:#f5f5f3; --line:rgba(11,11,12,.16); --line-strong:#0b0b0c; --hover:#efefec;
+    --rule:rgba(11,11,12,.07); --rule-2:rgba(11,11,12,.16);
+    --mono:"SF Mono",ui-monospace,"Roboto Mono",Menlo,monospace;
+    --grot:"Helvetica Neue",Inter,Arial,sans-serif;
+    --cols:9;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font:15px/1.5 var(--grot);
+    -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+  ::selection{background:var(--ink);color:var(--paper)}
+  /* the construction grid: fixed hairline columns, at the very back */
+  .grid{position:fixed;inset:0;z-index:0;pointer-events:none;
+    background-image:linear-gradient(to right,var(--rule) 0 1px,transparent 1px);
+    background-size:calc(100% / var(--cols)) 100%}
+  /* grain, multiplied onto the paper */
+  .grain{position:fixed;inset:0;z-index:70;pointer-events:none;opacity:.26;
+    mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.4'/%3E%3C/svg%3E")}
+  /* ---- motion & interactivity ---- */
+  @keyframes fadeUp{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+  @keyframes scrimIn{from{opacity:0}to{opacity:1}}
+  @keyframes modalIn{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
+  @keyframes shimmer{0%{background-position:-500px 0}100%{background-position:500px 0}}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes toastIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+  .r,.lb,.collab,.creator{animation:fadeUp .32s cubic-bezier(.2,.7,.3,1) both}
+  /* hover/press feedback */
+  .r{transition:background .14s, transform .14s}
+  .r:hover{transform:translateX(2px)}
+  .lb{transition:background .14s,padding-left .14s,border-radius .14s}
+  .lb:hover{background:var(--hover);padding-left:6px;border-radius:0}
+  .collab{transition:background .14s,padding-left .14s}
+  .collab:hover{background:var(--hover);padding-left:6px}
+  button{transition:transform .08s, opacity .14s, background .14s, color .14s, border-color .14s}
+  button:hover{opacity:.92}
+  button:active{transform:translateY(1px)}
+  .tab,.gpill{transition:background .15s,color .15s,border-color .15s,transform .08s}
+  .tab:active,.gpill:active{transform:translateY(1px)}
+  .tab-panel{animation:fadeUp .24s ease both}
+  /* loading spinner inside buttons */
+  .spin{display:inline-block;width:11px;height:11px;border:2px solid currentColor;border-right-color:transparent;
+    border-radius:50%;animation:spin .6s linear infinite;vertical-align:-1px;margin-right:6px}
+  /* skeleton shimmer */
+  .sk{border:1px solid var(--line);height:56px;margin-bottom:10px;border-radius:0;
+    background:linear-gradient(90deg,#f3f3f3 25%,#fafafa 37%,#f3f3f3 63%);background-size:500px 100%;animation:shimmer 1.2s infinite}
+  /* toast */
+  #toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:80;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
+  .toast{background:var(--ink);color:var(--paper);font-size:13px;letter-spacing:.02em;padding:11px 18px;border-radius:0;
+    box-shadow:0 6px 24px rgba(0,0,0,.18);animation:toastIn .28s cubic-bezier(.2,.7,.3,1) both}
+  .wrap{max-width:960px;margin:0 auto;padding:0 32px 120px}
+  .kicker{font-family:var(--mono);font-size:8.5px;text-transform:uppercase;letter-spacing:.24em;color:var(--ink-3,#8a8c8e)}
+  /* masthead */
+  .masthead{display:flex;justify-content:space-between;align-items:flex-end;
+    border-bottom:1px solid var(--line);padding:40px 0 18px;margin-bottom:28px}
+  h1{font-size:clamp(28px,4.4vw,44px);font-weight:700;letter-spacing:-.045em;margin:10px 0 0;line-height:.9}
+  h2,h3,h4,h5{font-weight:400}
+  b,strong{font-weight:500}
+  .masthead-sub{font-size:13px;color:var(--muted);margin-top:6px}
+  .masthead-sub b{color:var(--ink);font-weight:500}
+  .badge{font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;
+    border:1px solid var(--ink);padding:5px 11px;border-radius:0}
+  .badge.demo{border-color:var(--faint);color:var(--faint)}
+  /* creator card */
+  .creator{border-bottom:1px solid var(--line);padding:26px 0}
+  .creator .top{display:flex;justify-content:space-between;align-items:baseline;gap:16px}
+  .cname{font-size:22px;font-weight:400}
+  .cniche{font-size:11px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted)}
+  .seeds{font-size:12px;color:var(--faint);margin-top:6px}
+  /* action toolbar: its own row, wraps cleanly, evenly spaced */
+  .actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:14px}
+  button{font:inherit;font-size:11px;letter-spacing:.12em;text-transform:uppercase;background:var(--ink);color:var(--paper);
+    border:1px solid var(--ink);padding:9px 15px;border-radius:0;cursor:pointer}
+  button.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+  button.ghost:hover{border-color:var(--ink)}
+  button.tiny{padding:5px 9px;font-size:11px}
+  button:disabled{opacity:.4;cursor:default}
+  /* radar list */
+  .radar{margin-top:18px}
+  .pgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin:6px 0 4px}
+  .pcell{position:relative;aspect-ratio:3/4;overflow:hidden;background:var(--hover);display:block;border-radius:0}
+  .pcell img{width:100%;height:100%;object-fit:cover;display:block}
+  .pcell .ov{position:absolute;bottom:0;left:0;right:0;padding:16px 7px 5px;font-size:11px;color:var(--paper);font-weight:500;background:linear-gradient(transparent,rgba(0,0,0,.55))}
+  .pcell .ic{position:absolute;top:5px;right:6px;font-size:12px;color:var(--paper);text-shadow:0 1px 3px rgba(0,0,0,.75)}
+  .pcell .noimg{display:flex;align-items:center;justify-content:center;height:100%;font-size:10px;color:var(--muted);text-align:center;padding:6px}
+  .r{display:grid;grid-template-columns:30px 1fr auto auto auto auto;gap:14px;align-items:center;
+    padding:11px 8px;border-top:1px solid var(--line)}
+  .r:hover{background:var(--hover)}
+  .r .idx{color:var(--faint);font-variant-numeric:tabular-nums}
+  .r .label{font-size:16px}
+  .r .meta{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em}
+  .pill{font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding:3px 9px;border-radius:0;border:1px solid}
+  .pill.buy{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .pill.watch{background:var(--paper);color:var(--ink);border-color:var(--ink)}
+  .pill.saturated{background:var(--paper);color:var(--faint);border-color:var(--line)}
+  .mom{font-size:12px;color:var(--muted)}
+  .empty{color:var(--faint);font-size:13px;padding:14px 0}
+  .nichehead{font-size:11px;text-transform:uppercase;letter-spacing:.14em;color:var(--ink);font-weight:500;margin:16px 0 4px;padding-top:8px;border-top:1px solid var(--line)}
+  /* add form */
+  .panel{border:1px solid var(--line);border-radius:0;padding:24px;margin-top:40px}
+  .panel h2{font-size:13px;text-transform:uppercase;letter-spacing:.14em;margin:0 0 16px;font-weight:500}
+  label{display:block;font-family:var(--mono);font-size:8.5px;text-transform:uppercase;letter-spacing:.2em;color:var(--faint);margin:14px 0 5px}
+  label.sub{text-transform:none;letter-spacing:.02em;font-size:12px;color:var(--ink);font-weight:500;margin:12px 0 4px}
+  input[type=text],textarea{width:100%;font:inherit;border:1px solid var(--line);padding:9px 11px;border-radius:0}
+  textarea{min-height:90px;resize:vertical}
+  .hint{font-size:12px;color:var(--faint);margin-top:5px;line-height:1.5}
+  .paneltip{font-size:13px;color:var(--muted);margin:0 0 20px}
+  .invitebox{border:1px solid var(--line);border-radius:0;padding:18px;margin:6px 0 4px;background:var(--hover)}
+  .invitehead{font-size:15px;font-weight:500;margin-bottom:4px}
+  .invitebox .paneltip{margin-bottom:13px}
+  .inviterow{display:flex;gap:8px;flex-wrap:wrap}
+  .inviterow input{flex:1;min-width:200px;font:inherit;font-size:14px;border:1px solid var(--line);border-radius:0;padding:10px 11px;background:var(--paper);color:var(--muted)}
+  .inviterow button{white-space:nowrap}
+  .ordiv{display:flex;align-items:center;text-align:center;color:var(--faint);font-size:12px;text-transform:uppercase;letter-spacing:.1em;margin:26px 0 8px}
+  .ordiv::before,.ordiv::after{content:"";flex:1;height:1px;background:var(--line)}
+  .ordiv span{padding:0 12px}
+  .paneltip b{color:var(--ink)}
+  .opt{color:var(--faint);font-weight:400;text-transform:none;letter-spacing:0}
+  code{background:var(--hover);border:1px solid var(--line);border-radius:0;padding:1px 6px;font-size:12px;font-family:ui-monospace,Menlo,monospace;color:var(--ink)}
+  .fmtrow{display:flex;flex-direction:column;gap:9px;margin:6px 0 2px}
+  .chk{display:flex;align-items:center;gap:10px;font-size:15px;text-transform:none;letter-spacing:0;color:var(--ink);margin:0;cursor:pointer}
+  .chk input{width:16px;height:16px}
+  .muted2{color:var(--faint);font-size:12px}
+  .colophon{margin-top:60px;font-size:11px;color:var(--faint);letter-spacing:.08em;text-transform:uppercase}
+  /* group switcher */
+  .groupbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 18px;
+    padding-bottom:18px;border-bottom:1px solid var(--line)}
+  .gpill{font:inherit;font-size:14px;background:var(--paper);color:var(--muted);border:1px solid var(--line);
+    border-radius:0;padding:8px 16px;cursor:pointer;transition:all .12s}
+  .gpill:hover{border-color:var(--ink);color:var(--ink)}
+  .gpill.active{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .gpill.new{border-style:dashed;color:var(--ink)}
+  /* tabs */
+  .tabs{display:flex;gap:8px;margin:0 0 28px;flex-wrap:wrap}
+  .tab{font:inherit;font-size:13px;font-weight:400;letter-spacing:.02em;background:var(--paper);color:var(--muted);
+    border:1px solid var(--line);border-radius:0;padding:9px 18px;cursor:pointer;transition:all .12s}
+  .tab:hover{border-color:var(--ink);color:var(--ink)}
+  .tab.active{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  /* active state on per-creator toggles */
+  .tiny.ghost.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  /* group name bar */
+  .namebar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:22px}
+  .namebar label{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin:0}
+  .namebar input{font:inherit;font-size:15px;padding:8px 11px;border:1px solid var(--line);border-radius:0;width:220px}
+  .namehint{font-size:12px;color:var(--faint)}
+  /* label HQ */
+  .hq{border:1px solid var(--line);border-radius:0;padding:22px;margin-bottom:34px}
+  .hq h2{font-size:12px;text-transform:uppercase;letter-spacing:.14em;margin:0 0 14px;font-weight:500}
+  .digest{font-size:15px;line-height:1.7;margin-bottom:18px}
+  .digest b{font-weight:500}
+  .hq-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px}
+  @media(max-width:680px){.hq-grid{grid-template-columns:1fr}}
+  .hq-col h3{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin:0 0 8px}
+  .lb{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:7px 0;border-top:1px solid var(--line);font-size:14px}
+  .lb .rk{color:var(--faint);font-variant-numeric:tabular-nums}
+  .lb .pts{font-size:12px;color:var(--muted)}
+  .collab{padding:8px 0;border-top:1px solid var(--line);font-size:14px}
+  .collab .who{font-weight:500}
+  .collab .what{color:var(--muted);font-size:13px}
+  /* plan */
+  .planbox{margin-top:16px;padding:16px;background:var(--hover);border:1px solid var(--line)}
+  .streambox{margin-top:16px;padding:16px;background:var(--hover);border:1px solid var(--line)}
+  .streamhead{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:8px}
+  .plan-row{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center;font-size:14px;padding:10px 0;border-top:1px solid var(--line)}
+  /* shared status control — identical to the creator view */
+  .seg{display:flex;border:1px solid var(--line);border-radius:0;overflow:hidden}
+  .segbtn{font:inherit;font-size:11px;letter-spacing:.05em;text-transform:uppercase;background:var(--paper);color:var(--muted);
+    border:none;border-right:1px solid var(--line);padding:7px 11px;cursor:pointer;transition:background .14s,color .14s}
+  .segbtn:last-child{border-right:none}
+  .segbtn.on{background:var(--ink);color:var(--paper)}
+  /* brand deals */
+  .dealbox{margin-top:16px;padding:16px;background:var(--hover);border:1px solid var(--line)}
+  .dealaddr{font-size:13px;margin-bottom:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .deal{padding:13px 0;border-top:1px solid var(--line)}
+  .deal.dim{opacity:.5}
+  .dtop{display:flex;justify-content:space-between;align-items:center;gap:12px}
+  .dbrand{font-size:16px}
+  .dbar{display:grid;grid-template-columns:42px 1fr 26px;gap:9px;align-items:center;margin-top:7px}
+  .dbl{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+  .dtrack{height:6px;background:var(--line);border-radius:0;overflow:hidden}
+  .dfill{display:block;height:100%;background:var(--ink)}
+  .dval{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;text-align:right}
+  .dsum{font-size:13px;margin-top:8px}
+  .dflags{font-size:12px;color:#b00;margin-top:6px}
+  .drep{font-size:12px;color:var(--muted);margin-top:7px}
+  /* watch-list editor */
+  .watchbox{margin-top:16px;padding:16px;background:var(--hover);border:1px solid var(--line)}
+  .wl-head{font-size:14px;margin-bottom:12px}
+  .wl-sub{color:var(--muted);font-size:12px;font-weight:400}
+  .wl-add{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+  .wl-add input{flex:1;min-width:160px;font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:0}
+  .wl-add select{font:inherit;padding:8px;border:1px solid var(--line);border-radius:0}
+  .wl-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px}
+  .wl-row{display:flex;justify-content:space-between;align-items:center;background:var(--paper);border:1px solid var(--line);padding:7px 11px;border-radius:0}
+  .wl-h{font-size:14px;color:inherit;text-decoration:none;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .wl-h:hover{text-decoration:underline}
+  .recent{margin-top:14px;border-top:1px solid var(--line);padding-top:14px}
+  .chart-head{display:flex;gap:24px;align-items:baseline;margin-bottom:10px}
+  .stat{display:flex;flex-direction:column}
+  .stat .n{font-size:20px}
+  .stat .l{font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
+  .chart-row{display:grid;grid-template-columns:1fr auto auto;gap:12px;font-size:13px;padding:6px 0;border-top:1px solid var(--line)}
+  /* brief modal */
+  .scrim{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;z-index:50}
+  .scrim.on{display:flex;animation:scrimIn .2s ease}
+  .modal{background:var(--paper);max-width:620px;width:92%;max-height:86vh;overflow:auto;padding:34px;border:1px solid var(--line);border-radius:0;
+    animation:modalIn .26s cubic-bezier(.2,.7,.3,1) both}
+  .modal h3{font-size:24px;font-weight:300;margin:0 0 4px;letter-spacing:-.02em}
+  .modal .ksub{font-size:11px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin-bottom:22px}
+  .modal .sec{margin:18px 0}
+  .modal .sec h4{font-size:11px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin:0 0 6px}
+  .modal .sec p{margin:0;font-size:15px}
+  .modal ol{margin:0;padding-left:20px;font-size:14px}
+  .modal ol li{margin:4px 0}
+  .modal .closeb{margin-top:24px}
+  .modal .src{font-size:10px;color:var(--faint);text-transform:uppercase;letter-spacing:.12em;margin-top:18px}
+  .exlink{display:block;border:1px solid var(--line);padding:10px 12px;margin-bottom:7px;font-size:13px;color:var(--ink);text-decoration:none}
+  .exlink:hover{background:var(--hover)}
+  .platgrid{display:flex;flex-direction:column;gap:8px;margin:6px 0 2px}
+  .plat{border:1px solid var(--line);border-radius:0;overflow:hidden}
+  .plat-h{width:100%;display:flex;justify-content:space-between;align-items:center;background:none;border:0;padding:11px 13px;font:inherit;font-size:15px;color:var(--ink);cursor:pointer;text-align:left}
+  .plat-h:hover{background:var(--hover)}
+  .plat .chev{transition:transform .15s;opacity:.45;font-size:12px}
+  .plat.open .chev{transform:rotate(180deg)}
+  .plat-body{display:none;flex-direction:column;gap:9px;padding:2px 15px 13px}
+  .plat.open .plat-body{display:flex}
+  .soon{font-size:10px;text-transform:uppercase;letter-spacing:.06em;opacity:.5;border:1px solid currentColor;border-radius:0;padding:1px 5px;margin-left:3px}
+  .plat-ex-wrap{margin-top:9px;padding-top:9px;border-top:1px solid var(--line)}
+  .plat-ex-lab{display:block;font-size:12px;color:var(--faint);margin-bottom:4px;text-transform:none;letter-spacing:0}
+  .plat-ex{width:100%}
+  .wl-niche{margin:16px 0}
+  .wl-niche-head{font-size:11px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);font-weight:400;border-top:1px solid var(--line);padding-top:18px;margin:26px 0 12px}
+  .wl-niche:first-child .wl-niche-head{border-top:0;padding-top:2px;margin-top:4px}
+  .wl-plat-sec{border:1px solid var(--line);border-radius:0;padding:12px 14px;margin:8px 0}
+  .wl-plat-head{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--faint);margin:16px 0 10px}
+
+  /* ---------- paper edition: structure ---------- */
+  .wrap{position:relative;z-index:1}
+  /* content blocks sit on opaque paper so the grid never crosses type */
+  .panel,.hq,.creator,.invitebox,.planbox,.streambox,.dealbox,.watchbox,.modal{background:var(--paper)}
+  .invitebox,.planbox,.streambox,.dealbox,.watchbox{background:var(--paper-2)}
+  /* masthead: the logotype, with the mark hung as a superscript */
+  .masthead{border-bottom:1px solid var(--rule-2);padding:56px 0 20px}
+  .masthead h1 sup{font-size:.24em;font-weight:400;letter-spacing:0;vertical-align:super;margin-left:.06em}
+  .masthead-sub{font-family:var(--mono);font-size:8.5px;letter-spacing:.19em;
+    text-transform:uppercase;color:var(--muted);margin-top:12px}
+  .masthead-sub b{color:var(--ink);font-weight:400}
+  /* chips: squared, mono, hairline — the LIVE chip is the only solid fill */
+  .pill{font-family:var(--mono);font-size:8px;letter-spacing:.18em}
+  .tab,.gpill{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;
+    background:transparent;padding:10px 16px}
+  .tab.active,.gpill.active{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  /* section heads + column labels share the marginalia voice */
+  .nichehead,.panel h2,.hq h2,.hq-col h3,.stat .l,.dbl,.wl-niche-head,.wl-plat-head,
+  .streamhead,.modal .ksub,.modal .sec h4,.modal .src,.ordiv{
+    font-family:var(--mono);letter-spacing:.2em}
+  .colophon{font-family:var(--mono);font-size:8.5px;letter-spacing:.19em;color:var(--faint);
+    border-top:1px solid var(--rule-2);padding-top:18px}
+  /* inputs: hairline underline, not a boxed field */
+  input[type=text],textarea,.wl-add input,.namebar input,.inviterow input{
+    background:transparent;border:1px solid var(--line);border-radius:0}
+  input[type=text]:focus,textarea:focus{outline:none;border-color:var(--ink)}
+  a:focus-visible,button:focus-visible,input:focus-visible{outline:1.5px solid var(--ink);outline-offset:3px}
+  /* the row rules drop to the background weight; structure keeps --rule-2 */
+  .r,.lb,.collab,.chart-row,.plan-row,.deal{border-top-color:var(--rule-2)}
+
+  /* ============================================================
+     REFINEMENT LAYER — borrows the public site's editorial devices:
+     sliding-underline nav, marginalia, crop rules, generous measure.
+     Appended last so it wins. No class names change, so no JS breaks.
+     ============================================================ */
+
+  /* wider measure, aligned to the same --pad rhythm as the showcase */
+  :root{ --pad:clamp(18px,3.6vw,44px); --ink-3:#8a8c8e; }
+  .wrap{max-width:1140px;margin:0 auto;padding:0 var(--pad) 160px}
+
+  /* ---------- masthead: a proper editorial header ---------- */
+  .masthead{
+    position:relative;display:grid;grid-template-columns:1fr auto;align-items:end;
+    gap:24px;border-bottom:0;padding:clamp(48px,7vh,84px) 0 22px;margin-bottom:0}
+  /* crop rules box the masthead the way they box the showcase hero */
+  .masthead::before,.masthead::after{content:"";position:absolute;left:0;right:0;height:1px;
+    background:var(--rule-2)}
+  .masthead::before{top:calc(clamp(48px,7vh,84px) - 18px)}
+  .masthead::after{bottom:0}
+  .masthead h1{font-size:clamp(30px,5vw,52px);line-height:.88;margin:14px 0 0}
+  .masthead h1 sup{font-size:.22em;top:-.05em}
+  .kicker{color:var(--ink-3)}
+  .masthead-sub{margin-top:14px}
+
+  /* status chips sit as marginalia, not as buttons */
+  .masthead .actions{gap:7px;margin:0;padding-bottom:3px}
+  .badge{border-color:var(--rule-2);color:var(--ink-2,#4c4e50);padding:6px 10px}
+  .badge:not(.demo){background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  a.badge.demo:hover{border-color:var(--ink);color:var(--ink)}
+
+  /* ---------- group switcher: a quiet index row ---------- */
+  .groupbar{gap:0;padding:16px 0;margin:0;border-bottom:1px solid var(--rule)}
+  .gpill{border:0;padding:7px 15px 7px 0;margin:0;color:var(--ink-3);
+    font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;position:relative}
+  .gpill::after{content:"";position:absolute;left:0;right:100%;bottom:2px;height:1px;
+    background:var(--ink);transition:right .35s cubic-bezier(.2,.8,.2,1)}
+  .gpill:hover{color:var(--ink);background:transparent}
+  .gpill:hover::after,.gpill.active::after{right:15px}
+  .gpill.active{background:transparent;color:var(--ink);border:0}
+  .gpill.new{border:0;color:var(--ink-3);text-decoration:none}
+  .gpill.new:hover{color:var(--ink)}
+
+  /* ---------- tabs: the showcase's sliding-underline nav ---------- */
+  .tabs{gap:clamp(18px,3vw,40px);margin:26px 0 40px;border:0}
+  .tab{background:transparent;border:0;border-radius:0;padding:4px 0 6px;
+    font-family:var(--grot);font-size:12.5px;letter-spacing:.01em;text-transform:none;
+    color:var(--ink-2,#4c4e50);position:relative}
+  .tab::after{content:"";position:absolute;left:0;right:100%;bottom:0;height:1px;
+    background:var(--ink);transition:right .35s cubic-bezier(.2,.8,.2,1)}
+  .tab:hover{background:transparent;color:var(--ink)}
+  .tab:hover::after,.tab.active::after{right:0}
+  .tab.active{background:transparent;color:var(--ink);font-weight:500;border:0}
+
+  /* ---------- panels read as sheets, not cards ---------- */
+  .panel,.hq{border:0;border-top:1px solid var(--rule-2);border-radius:0;
+    padding:30px 0 40px;margin-top:0}
+  .panel h2,.hq h2{font-size:9px;letter-spacing:.24em;color:var(--ink-3);
+    font-weight:400;margin-bottom:22px}
+  /* the ◦ eyebrow the showcase uses on every section head */
+  .panel h2::before,.hq h2::before{content:"◦ ";color:var(--ink-4,#b9bbbc)}
+  .hq-col h3,.nichehead{font-size:9px;letter-spacing:.24em;color:var(--ink-3);font-weight:400}
+
+  /* nested boxes keep a hairline but lose the fill — less "app", more paper */
+  .invitebox,.planbox,.streambox,.dealbox,.watchbox{
+    background:transparent;border:1px solid var(--rule);padding:20px}
+
+  /* ---------- rows: tighter rhythm, tabular figures ---------- */
+  .r{padding:13px 0;gap:16px}
+  .r:hover{background:transparent;transform:none;padding-left:6px}
+  .r .idx,.lb .rk,.dval,.stat .n{font-variant-numeric:tabular-nums}
+  .r .label{font-size:15px;letter-spacing:-.01em}
+  .creator{padding:32px 0;border-bottom:1px solid var(--rule-2)}
+  .cname{font-size:21px;font-weight:500;letter-spacing:-.02em}
+  .cniche{font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;color:var(--ink-3)}
+
+  /* ---------- empty states: centred, quiet, framed ---------- */
+  .empty{font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--ink-3);text-align:center;padding:44px 20px;border:1px solid var(--rule)}
+
+  /* ---------- buttons ---------- */
+  button{padding:10px 16px}
+  button.ghost{border-color:var(--rule-2)}
+  button.ghost:hover{background:var(--ink);color:var(--paper);border-color:var(--ink);opacity:1}
+  button.tiny{padding:6px 11px;font-size:9px;letter-spacing:.16em}
+
+  /* ---------- colophon as a footer rule ---------- */
+  .colophon{margin-top:80px;padding-top:20px}
+
+  @media(max-width:720px){
+    .masthead{grid-template-columns:1fr}
+    .masthead .actions{padding-bottom:0}
+    .tabs{gap:20px}
+  }
+</style>
+</head>
+<body>
+<div class="grid"></div>
+<div class="wrap">
+
+  <header class="masthead">
+    <div>
+      <div class="kicker">Intelligence Desk · Internal</div>
+      <h1>JS ENTERTAINMENT<sup>®</sup></h1>
+      <div class="masthead-sub" id="mast-sub"></div>
+    </div>
+    <div class="actions">
+      {% if live %}<span class="badge">Live · Apify</span>{% else %}<span class="badge demo">Demo data</span>{% endif %}
+      {% if ai %}<span class="badge">AI briefs</span>{% else %}<span class="badge demo">Briefs: template</span>{% endif %}
+      <a class="badge demo" href="/logout" style="text-decoration:none">Log out</a>
+    </div>
+  </header>
+
+  <div class="groupbar" id="groupbar"></div>
+
+  <nav class="tabs">
+    <button class="tab active" data-tab="overview" onclick="showTab('overview')">Overview</button>
+    <button class="tab" data-tab="roster" onclick="showTab('roster')">Creators</button>
+    <button class="tab" data-tab="add" onclick="showTab('add')">Add creator</button>
+  </nav>
+
+  <div class="tab-panel" id="panel-overview">
+    <div class="namebar">
+      <button class="tiny ghost" onclick="renameGroup()">Rename group</button>
+      <button class="tiny ghost" onclick="deleteGroup()">Delete group</button>
+      <span class="namehint">Acting on the highlighted group above.</span>
+    </div>
+    <div class="hq" id="hq"></div>
+  </div>
+
+  <div class="tab-panel" id="panel-roster" style="display:none">
+    <div id="roster"></div>
+  </div>
+
+  <div class="tab-panel" id="panel-add" style="display:none">
+  <div class="panel">
+    <h2>Add a creator</h2>
+    <p class="paneltip">They'll join the group you have selected at the top: <b id="add-group-note">—</b></p>
+
+    <div class="invitebox">
+      <div class="invitehead">Let creators sign themselves up</div>
+      <p class="paneltip">Send this link — the creator fills in their own details and lands straight in their view. Nothing to add by hand.</p>
+      <div class="inviterow">
+        <input type="text" id="invite-link" readonly placeholder="Select a group above to get a link">
+        <button id="copyInvite" class="ghost" type="button">Copy</button>
+        <button id="regenInvite" class="ghost" type="button" title="Make a new link — the old one stops working">New link</button>
+      </div>
+    </div>
+
+    <p class="paneltip" style="margin-top:16px">Creators set up everything themselves from the link — name, platforms, the accounts they post like, and their watch-list. You'll see them appear on the Roster once they join.</p>
+  </div>
+  </div>
+
+  <div class="colophon">JS Entertainment® · overperformance radar · {% if live %}live{% else %}demo mode — set APIFY_TOKEN to go live{% endif %}</div>
+</div>
+<div class="grain"></div>
+
+<div class="scrim" id="scrim" onclick="if(event.target===this)closeBrief()">
+  <div class="modal" id="modal"></div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const MOM = {new:"▲ new", rising:"▲ rising", steady:"— steady", fading:"▼ fading"};
+const COMEBACK = {new:"just started", rising:"on a hot streak", steady:"holding steady", cooling:"cooling off"};
+const STATUS = {buy:"Film now", watch:"Warming up", saturated:"Too late"};
+const MOMENT = {new:"brand new", rising:"picking up speed", steady:"holding steady", fading:"fading"};
+const UNIT = {audio:"sound", hashtag:"hashtag", topic:"YouTube topic", photo:"picture", concept:"AI trend"};
+const PF = {tiktok:"TikTok", instagram:"Instagram"};
+// Token -> display label. Tokens must match PLATFORMS below; an unmapped one falls
+// through and prints raw (that's how YT_LONG / YT_LIVE were leaking into the UI).
+const FMT = {tiktok:"TikTok", reels:"Reels", post:"Posts", short:"Short-form", long:"Long-form",
+             photo:"Photos", stream:"Streaming",
+             yt_long:"YouTube", yt_short:"Shorts", yt_live:"YouTube Live"};
+
+function showTab(name){
+  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.tab===name));
+  document.querySelectorAll(".tab-panel").forEach(p => {
+    const on = p.id==="panel-"+name;
+    p.style.display = on ? "block" : "none";
+    if(on){ p.style.animation="none"; void p.offsetWidth; p.style.animation=""; }  // replay fade
+  });
+}
+
+// toast notifications (replaces blunt alerts)
+function toast(msg){
+  const wrap=document.getElementById("toast");
+  const t=document.createElement("div"); t.className="toast"; t.textContent=msg;
+  wrap.appendChild(t);
+  setTimeout(()=>{ t.style.transition="opacity .3s,transform .3s"; t.style.opacity="0"; t.style.transform="translateY(8px)";
+    setTimeout(()=>t.remove(),300); }, 2200);
+}
+// skeleton placeholders while data loads
+const skel = n => Array.from({length:n}).map(()=>'<div class="sk"></div>').join("");
+
+// ---- stream radar (what to go live with) ----
+const STREAM_STATUS = {"go live":"Go live","watch":"Warming up","crowded":"Crowded"};
+const STREAM_PILL = {"go live":"buy","watch":"watch","crowded":"saturated"};
+const SRC = {twitch:"Twitch", youtube_live:"YouTube Live"};
+
+function streamRowsHTML(rows){
+  if(!rows || !rows.length) return '<div class="empty">No stream scan yet — this updates on its own.</div>';
+  return rows.map((r,i)=>{
+    const why = r.status==="go live" ? `${r.viewers.toLocaleString()} watching, only ${r.streams_count} live — open lane`
+      : r.status==="crowded" ? `${r.streams_count} streamers splitting ${r.viewers.toLocaleString()} viewers`
+      : `${r.viewers.toLocaleString()} watching`;
+    return `<div class="r" style="animation-delay:${i*0.04}s">
+      <span class="idx">${String(i+1).padStart(2,"0")}</span>
+      <span class="label">${esc(r.category)} <span class="meta">${SRC[r.source]||r.source}</span></span>
+      <span class="mom">${MOMENT[r.momentum]||r.momentum}</span>
+      <span class="meta">${esc(why)}</span>
+      <span class="pill ${STREAM_PILL[r.status]||'watch'}">${STREAM_STATUS[r.status]||r.status}</span>
+    </div>`;
+  }).join("");
+}
+
+// ---- groups ----
+let GROUPS = [], activeGroup = null, CREATORS = {};
+
+async function loadGroups(){
+  GROUPS = await (await fetch("/api/groups")).json();
+  const saved = +localStorage.getItem("activeGroup");
+  activeGroup = GROUPS.some(g=>g.id===saved) ? saved : (GROUPS[0] ? GROUPS[0].id : null);
+  renderGroupBar();
+}
+function renderGroupBar(){
+  const bar = document.getElementById("groupbar");
+  bar.innerHTML = GROUPS.map(g=>`<button class="gpill ${g.id===activeGroup?'active':''}" onclick="selectGroup(${g.id})">${esc(g.name)}</button>`).join("")
+    + `<button class="gpill new" onclick="newGroup()">+ New group</button>`;
+  const g = GROUPS.find(x=>x.id===activeGroup);
+  document.getElementById("mast-sub").innerHTML = g ? `managing <b>${esc(g.name)}</b>` : "no groups yet — create one";
+  const an = document.getElementById("activeGroupName"); if(an) an.textContent = g?g.name:"—";
+  const note = document.getElementById("add-group-note"); if(note) note.textContent = g?g.name:"(create a group first)";
+  loadInvite();
+}
+async function loadInvite(){
+  const inp=document.getElementById("invite-link"); if(!inp) return;
+  if(!activeGroup){ inp.value=""; return; }
+  try{ const r=await (await fetch("/api/invite?group_id="+activeGroup)).json(); inp.value=r.link||""; }catch(e){}
+}
+(function(){
+  const cp=document.getElementById("copyInvite"), rg=document.getElementById("regenInvite");
+  if(cp) cp.onclick=()=>{ const inp=document.getElementById("invite-link"); if(!inp.value) return;
+    navigator.clipboard.writeText(inp.value); cp.textContent="Copied"; setTimeout(()=>cp.textContent="Copy",1400); };
+  if(rg) rg.onclick=async()=>{ if(!activeGroup) return;
+    if(!confirm("Make a new invite link? The current link will stop working for anyone you already sent it to.")) return;
+    try{ const r=await (await fetch("/api/invite",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({group_id:activeGroup})})).json();
+      document.getElementById("invite-link").value=r.link||""; }catch(e){} };
+})();
+function selectGroup(id){ activeGroup=id; localStorage.setItem("activeGroup",id); renderGroupBar(); load(); }
+async function newGroup(){
+  const name = prompt("Name your new group (e.g. THE WAVE):"); if(!name||!name.trim()) return;
+  const r = await (await fetch("/api/groups",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({name:name.trim()})})).json();
+  await loadGroups(); activeGroup=r.id; localStorage.setItem("activeGroup",r.id);
+  renderGroupBar(); load(); showTab("add"); toast(`Group “${name.trim()}” created`);
+}
+async function renameGroup(){
+  if(!activeGroup) return;
+  const g = GROUPS.find(x=>x.id===activeGroup);
+  const name = prompt("Rename group:", g?g.name:""); if(!name||!name.trim()) return;
+  await fetch("/api/groups/"+activeGroup,{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({name:name.trim()})});
+  await loadGroups();
+}
+async function deleteGroup(){
+  if(!activeGroup) return;
+  const g = GROUPS.find(x=>x.id===activeGroup);
+  if(!confirm(`Delete the group “${g?g.name:''}” and ALL its creators? This can't be undone.`)) return;
+  await fetch("/api/groups/"+activeGroup,{method:"DELETE"});
+  await loadGroups(); load();
+}
+
+async function init(){ await loadGroups(); load(); setInterval(syncPlans, 4000); setInterval(syncDeals, 4000); setInterval(idleRefresh, 60000); }
+
+// re-pull the roster periodically so background auto-scans show up without a reload —
+// but only when nothing's open, so we never interrupt what the manager is doing.
+function idleRefresh(){
+  if(!activeGroup) return;
+  if(document.getElementById("scrim").classList.contains("on")) return;
+  const panelOpen = [planOpen, dealsOpen, watchOpen].some(o=>Object.values(o).some(Boolean));
+  if(panelOpen) return;
+  if(document.getElementById("panel-add").style.display!=="none") return;  // mid add-form
+  load();
+}
+
+// ---- live: new brand deals + creator replies ----
+let _dealSig = "";
+async function syncDeals(){
+  if(!activeGroup) return;
+  let items; try { items = await (await fetch("/api/deals/activity/"+activeGroup)).json(); } catch(e){ return; }
+  const sig = JSON.stringify(items.map(d=>[d.id,d.reply_status,d.replied_at]));
+  if(sig===_dealSig) return;
+  if(_dealSig!==""){
+    const prev = Object.fromEntries(JSON.parse(_dealSig).map(a=>[a[0],a]));
+    items.forEach(d=>{
+      if(!(d.id in prev)) toast(`New deal for ${d.creator_name}: ${d.brand}`);
+      else if(prev[d.id][1]!==d.reply_status && d.reply_status && d.reply_status!=="none")
+        toast(`${d.creator_name} replied (${d.reply_status}) to ${d.brand}`);
+    });
+  }
+  _dealSig = sig;
+  Object.keys(dealsOpen).forEach(id=>{ if(dealsOpen[id]) renderDeals(+id); });  // refresh open panels
+}
+
+async function load(){
+  const root = document.getElementById("roster");
+  if(!activeGroup){
+    root.innerHTML = '<div class="empty">No group yet. Click “+ New group” above to start.</div>';
+    loadHQ(false); return;
+  }
+  root.innerHTML = skel(2);
+  const cs = await (await fetch("/api/creators?group_id="+activeGroup)).json();
+  CREATORS = {}; cs.forEach(c=>CREATORS[c.id]=c);
+  root.innerHTML = cs.length ? cs.map((c,i)=>card(c,i)).join("")
+    : '<div class="empty">No creators in this group yet. Add one in the “Add creator” tab.</div>';
+  loadHQ(cs.length);
+}
+
+async function loadHQ(hasCreators){
+  const hq = document.getElementById("hq");
+  if(!hasCreators){
+    hq.innerHTML = `<h2>Roster HQ · Today at JS Entertainment</h2>
+      <div class="empty">No creators in this group yet. Add one to see everyone's progress and collabs.</div>`;
+    return;
+  }
+  hq.innerHTML = `<h2>Roster HQ · Today at JS Entertainment</h2>${skel(3)}`;
+  const d = await (await fetch("/api/hq?group_id="+activeGroup)).json();
+  const g = d.digest;
+  const cooling = g.cooling.length ? `<b>${g.cooling.join(", ")}</b> ${g.cooling.length>1?"haven't":"hasn't"} posted lately — nudge them.` : "Everyone's moving — no one's gone quiet.";
+  const collab = g.top_collab ? `Top collab: <b>${esc(g.top_collab.creators.join(" + "))}</b> can both ride “${esc(g.top_collab.label)}”.` : "No collab overlaps right now.";
+  const board = d.roster.map((b,i)=>`<div class="lb" style="animation-delay:${i*0.05}s">
+      <span>${esc(b.name)} <span class="pts">· ${esc(b.niche)}</span></span>
+      <span class="pts">${b.buys} ready to film</span></div>`).join("");
+  const collabs = d.collabs.length ? d.collabs.map((o,i)=>`<div class="collab" style="animation-delay:${i*0.05}s">
+      <div class="who">${esc(o.creators.join(" + "))}</div>
+      <div class="what">both hot on “${esc(o.label)}”${o.heat>=2?" (strong overlap)":""}</div></div>`).join("")
+      : '<div class="what" style="padding-top:8px;color:var(--faint)">Add more creators to find overlaps.</div>';
+  hq.innerHTML = `<h2>Roster HQ · Today at JS Entertainment</h2>
+    <div class="digest">
+      <b>${g.creators}</b> creators · <b>${g.hot_trends}</b> hot trends to jump on · <b>${g.new_trends}</b> brand-new.
+      ${g.rising.length?`<b>${esc(g.rising.join(", "))}</b> ${g.rising.length>1?"are":"is"} improving. `:""}${cooling}<br>${collab}
+    </div>
+    <div class="hq-grid">
+      <div class="hq-col"><h3>How everyone's doing</h3>${board}</div>
+      <div class="hq-col"><h3>Collab opportunities</h3>${collabs}</div>
+    </div>
+    <div class="digest" style="margin:18px 0 0;font-size:13px;color:var(--muted)">
+      <b>Reading the radar (in the Creators tab):</b> Film now = jump on it · Warming up = get ready · Too late = skip.
+      “3 creators riding it” = how many in that niche are already winning with it.
+    </div>`;
+}
+
+const STEPS = [["idea","Ideating"],["filming","Filming"],["posted","Posted"]];
+const planOpen = {};
+async function togglePlan(id,btn){
+  const el=document.getElementById("plan-"+id);
+  planOpen[id]=!planOpen[id];
+  if(btn) btn.classList.toggle("on", planOpen[id]);
+  if(!planOpen[id]){ el.style.display="none"; return; }
+  el.style.display="block"; renderPlan(id);
+}
+async function renderPlan(id){
+  const el=document.getElementById("plan-"+id);
+  const items=await (await fetch("/api/plan/"+id)).json();
+  if(!items.length){ el.innerHTML='<div class="empty">No planned posts yet. Open a trend → Brief → “Add to plan”.</div>'; return; }
+  el.innerHTML = `<h3 style="font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin:0 0 6px">Posting plan</h3>`+
+    items.map(p=>`<div class="plan-row">
+      <span>${esc(p.title)}</span>
+      <div class="seg">${STEPS.map(([v,l])=>`<button class="segbtn ${p.status===v?'on':''}" onclick="setStatus(${p.id},'${v}',${id})">${l}</button>`).join("")}</div>
+      <button class="tiny ghost" onclick="delPlan(${p.id},${id})">Remove</button></div>`).join("");
+}
+async function setStatus(pid,status,cid){
+  _locallyChanged.add(pid+":"+status);   // don't re-toast our own change
+  await fetch("/api/plan/item/"+pid,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({status})});
+  renderPlan(cid);
+}
+async function delPlan(pid,cid){
+  await fetch("/api/plan/item/"+pid,{method:"DELETE"}); renderPlan(cid);
+}
+
+// ---- live sync: reflect creator plan changes immediately ----
+let _planSig = "";
+const _locallyAdded = new Set();
+const _locallyChanged = new Set();
+const STATUS_WORD = {idea:"ideating", filming:"filming", posted:"posted"};
+async function syncPlans(){
+  if(!activeGroup) return;
+  let items;
+  try { items = await (await fetch("/api/plans/"+activeGroup)).json(); } catch(e){ return; }
+  const sig = JSON.stringify(items.map(p=>[p.id,p.status]));
+  if(sig===_planSig) return;
+  const first = _planSig==="";
+  if(!first){
+    const prevMap = Object.fromEntries(JSON.parse(_planSig));
+    items.forEach(p=>{
+      if(!(p.id in prevMap)){
+        if(!_locallyAdded.has(p.id)) toast(`${p.creator_name} added “${p.title}” to their plan`);
+      } else if(prevMap[p.id]!==p.status && !_locallyChanged.has(p.id+":"+p.status)){
+        toast(`${p.creator_name} is now ${STATUS_WORD[p.status]||p.status}: ${p.title}`);
+      }
+    });
+  }
+  _planSig = sig;
+  Object.keys(planOpen).forEach(id=>{ if(planOpen[id]) renderPlan(+id); });  // refresh open panels
+}
+
+function card(c,i){
+  const accts = (c.seeds||[]).filter(s => s.kind==="self");
+  const seeds = accts.length ? accts.map(s => `${PF[s.platform]||s.platform} @${s.value}`).join(" · ") : "no accounts yet";
+  const fmts = c.formats || [];
+  const hasVideo = fmts.length===0 || fmts.includes("short") || fmts.includes("long");  // [] = legacy
+  const isStreamer = fmts.includes("stream");
+  const allbuy = (c.radar || []).filter(t => t.status === "buy");   // only "Film now"
+  const cniches = (c.niche || "").split(",").map(s=>s.trim()).filter(Boolean);
+  let radar;
+  if(cniches.length > 1){                                           // separate lane per niche
+    radar = cniches.map(nz=>{
+      const items = allbuy.filter(t=>(t.niche||"")===nz).slice(0,30);
+      return items.length ? `<div class="pgrid">`+items.map(gridCell).join("")+`</div>` : "";
+    }).join("");
+  } else {
+    const items = allbuy.slice(0,30);
+    radar = items.length ? `<div class="pgrid">`+items.map(gridCell).join("")+`</div>` : "";
+  }
+  if(!radar) radar = '<div class="empty">Reading the radar… this updates on its own.</div>';
+  const videoBlock = hasVideo ? `<div class="radar">${radar}</div>` : "";
+  const streamBlock = isStreamer ? `<div class="streambox">
+      <div class="streamhead">Go live with — trending now</div>
+      ${streamRowsHTML(c.streams||[])}
+    </div>` : "";
+  return `<div class="creator" style="animation-delay:${(i||0)*0.05}s">`+`
+    <div class="top">
+      <div>
+        <div class="cname">${esc(c.name)}</div>
+        <div class="cniche">${fmts.length?fmts.map(f=>FMT[f]||f).join(", "):"Instagram"} · link ${c.password?"locked":"open"}</div>
+        <div class="seeds">${esc(seeds)}</div>
+      </div>
+    </div>
+    <div class="actions">
+        <button class="tiny ghost" onclick="toggleWatch(${c.id},this)" title="View the accounts being watched for this creator">Watch-list</button>
+        <button class="tiny ghost" onclick="toggleDeals(${c.id},this)" title="Brand deals emailed to this creator's inbox address">Deals</button>
+        <button class="tiny ghost" onclick="shareLink(${c.id},this)" title="Copy this creator's private page link to send them">Creator link</button>
+        <button class="tiny ghost" onclick="del(${c.id})">Remove</button>
+      </div>
+    <div class="watchbox" id="watch-${c.id}" style="display:none"></div>
+    <div class="dealbox" id="deals-${c.id}" style="display:none"></div>
+    ${videoBlock}${streamBlock}
+  </div>`;
+}
+
+function fmtNum(n){ if(n==null||n<=0) return ""; return n>=1000000?(n/1000000).toFixed(1)+"M":n>=1000?(n/1000).toFixed(n>=10000?0:1)+"k":String(n); }
+function gridCell(t){
+  const ex=(t.examples&&t.examples[0])||{};
+  const url=ex.url||"#";
+  const isVid = t.medium!=="photo" && t.medium!=="carousel";
+  const icon = isVid ? "▶" : "";
+  const useLikes = (ex.likes!=null && ex.likes>0);
+  const stat = fmtNum(useLikes ? ex.likes : ex.views);
+  const statIcon = useLikes ? "♥" : "▶";
+  const img = ex.cover
+    ? `<img loading="lazy" src="/api/img?u=${encodeURIComponent(ex.cover)}" alt="" onerror="this.style.display='none'">`
+    : `<div class="noimg">Scan to load preview</div>`;
+  return `<a class="pcell" href="${esc(url)}" target="_blank" rel="noopener">
+     ${img}
+     ${icon?`<span class="ic">${icon}</span>`:""}
+     ${stat?`<span class="ov">${statIcon} ${stat}</span>`:""}
+   </a>`;
+}
+function row(t,i,cid){
+  (window._TR=window._TR||{})[cid+"|"+t.unit_key]=t;   // stash for the instant video modal
+  const riders = t.account_count>1 ? `${t.account_count} creators riding it` : "just starting";
+  const meta = (t.unit_type==="audio" && PF[t.platform]) ? PF[t.platform]+" sound" : (UNIT[t.unit_type]||t.unit_type);
+  const desc = (t.unit_type==="concept" && t.description) ? `<div class="meta" style="text-transform:none;letter-spacing:0;margin-top:3px;color:var(--faint)">${esc(t.description)}</div>` : "";
+  const snd = (t.sound && t.unit_type!=="audio") ? `<div class="meta" style="text-transform:none;letter-spacing:0;margin-top:2px;color:var(--faint)">🎵 ${esc(t.sound)}</div>` : "";
+  const fmt = t.medium==="carousel" ? "carousel" : t.medium==="photo" ? "photo" : "reel";
+  const statusLabel = (t.status==="buy" && t.medium!=="video") ? "Post now" : (STATUS[t.status]||t.status);
+  return `<div class="r" style="animation-delay:${i*0.03}s">
+    <span class="idx">${String(i+1).padStart(2,"0")}</span>
+    <span class="label">${esc(t.unit_label)} <span class="meta">${fmt}</span>${desc}${snd}</span>
+    <span class="mom">${MOMENT[t.momentum]||t.momentum}</span>
+    <span class="meta">${riders}</span>
+    <span class="pill ${t.status}">${statusLabel}</span>
+    <button class="tiny" onclick='openBrief(${cid},${aj(t.unit_key)},${aj(t.unit_label)})'>${t.medium==="video"?"Video":t.medium==="carousel"?"Carousel":"Photo"}</button>
+  </div>`;
+}
+
+// ---- Watch-list: curate the accounts scanned for a creator (manual + discovered) ----
+const watchOpen = {};
+async function toggleWatch(id,btn){
+  const el = document.getElementById("watch-"+id);
+  watchOpen[id] = !watchOpen[id];
+  if(btn) btn.classList.toggle("on", watchOpen[id]);
+  if(!watchOpen[id]){ el.style.display="none"; return; }
+  el.style.display="block";
+  await renderWatch(id);
+}
+// per-platform watch-list config (who to track). [key,label,noun,url,grow]
+const WL_PLATS = [
+  {key:"instagram", label:"Instagram", noun:"account",  grow:true,  url:v=>`https://www.instagram.com/${encodeURIComponent(v)}/`},
+  {key:"tiktok",    label:"TikTok",    noun:"account",  grow:false, url:v=>`https://www.tiktok.com/@${encodeURIComponent(v)}`},
+  {key:"youtube",   label:"YouTube",   noun:"channel",  grow:false, url:v=>`https://www.youtube.com/@${encodeURIComponent(v)}`},
+  {key:"twitch",    label:"Twitch",    noun:"streamer", grow:false, url:v=>`https://www.twitch.tv/${encodeURIComponent(v)}`},
+];
+// Admin watch-list = READ-ONLY. The creator adds/removes accounts + niches in their own view.
+async function renderWatch(id){
+  const el = document.getElementById("watch-"+id);
+  el.innerHTML = '<div class="empty">Loading…</div>';
+  const w = await (await fetch("/api/watchlist/"+id)).json();
+  const all = w.accounts||[];
+  const niches = Array.from(new Set([...(w.niches||[]), ...all.map(a=>a.niche).filter(Boolean)]));
+  if(!niches.length) niches.push((w.niches&&w.niches[0]) || "general");
+  const blocks = niches.map(niche=>{
+    const inNiche = all.filter(a=>(a.niche||niches[0])===niche);
+    const plats = WL_PLATS.map(p=>{
+      const mine = inNiche.filter(a=>(a.platform||"instagram")===p.key);
+      const rows = mine.map(a=>`<div class="wl-row"><a class="wl-h" href="${p.url(a.value)}" target="_blank" rel="noopener">@${esc(a.value)}</a></div>`).join("")
+        || `<div class="wl-sub">No ${p.label} ${p.noun}s.</div>`;
+      return `<div class="wl-plat-sec"><div class="wl-plat-head">${p.label} · ${mine.length}</div><div class="wl-list">${rows}</div></div>`;
+    }).join("");
+    return `<div class="wl-niche"><div class="wl-niche-head">${esc(niche)}</div>${plats}</div>`;
+  }).join("");
+  el.innerHTML = `<div class="wl-head">Watch-list <span class="wl-sub">— view only · the creator manages this in their own page</span></div>${blocks}`;
+}
+async function removeWatch(id,seedId){
+  await fetch("/api/watchlist/"+id+"/remove",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({seed_id:seedId})});
+  await renderWatch(id);
+}
+
+async function setCreatorPw(id,current){
+  const pw = prompt("Password for this creator's link (blank = open to anyone):", current||"");
+  if(pw===null) return;
+  await fetch("/api/creators/"+id+"/password",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({password:pw})});
+  toast(pw?"Link password set":"Link password removed"); load();
+}
+function shareLink(id,btn){ const url=location.origin+"/me/"+id;
+  navigator.clipboard?.writeText(url); const o=btn.textContent; btn.textContent="Copied";
+  setTimeout(()=>btn.textContent=o,1500); }
+async function del(id){ if(!confirm("Remove this creator?"))return;
+  await fetch("/api/creators/"+id,{method:"DELETE"}); load(); }
+
+// Scans run in the BACKGROUND now (deep AI analysis can outlast the request timeout),
+// so we kick it off, then poll until the scan timestamp changes and reload.
+async function _lastScan(id){ try{ return (await (await fetch("/api/last_scan/"+id)).json()).last_scan; }catch(e){ return null; } }
+async function _awaitScan(id, before, btn, label){
+  for(let i=0;i<30;i++){                       // up to ~5 min
+    await new Promise(r=>setTimeout(r,10000));
+    const ls = await _lastScan(id);
+    if(ls && ls!==before){ toast("Done — fresh trends in"); btn.disabled=false; btn.textContent=label; load(); return; }
+  }
+  toast("Still scanning — it'll refresh on its own"); btn.disabled=false; btn.textContent=label; load();
+}
+async function scanCreator(id,btn){
+  const o=btn.textContent; btn.disabled=true; btn.textContent="Scanning…";
+  const before=await _lastScan(id);
+  toast("Scanning their lane — deep analysis takes a minute or two");
+  try{ await fetch("/api/scan/"+id,{method:"POST"}); }
+  catch(e){ toast("Couldn't start scan"); btn.disabled=false; btn.textContent=o; return; }
+  _awaitScan(id, before, btn, o);
+}
+async function _growStat(id){ try{ return await (await fetch("/api/grow_status/"+id)).json(); }catch(e){ return {}; } }
+async function growCreator(id,btn){
+  const o=btn.textContent; btn.disabled=true; btn.textContent="Finding…";
+  const before = (await _growStat(id)).grow_done;
+  toast("Finding more creators — this can take a few minutes, hang tight…");
+  try{ await fetch("/api/grow/"+id,{method:"POST"}); }
+  catch(e){ toast("Couldn't start"); btn.disabled=false; btn.textContent=o; return; }
+  let tries=0;
+  const iv=setInterval(async ()=>{
+    tries++;
+    const s = await _growStat(id);
+    if(s.grow_done && s.grow_done!==before){
+      clearInterval(iv); btn.disabled=false; btn.textContent=o;
+      const n = parseInt(s.grow_added||"0",10);
+      toast(n>0 ? `Done — added ${n} new creator${n>1?"s":""} to the watch-list.`
+                : "Done — no new creators found this round. Try again in a bit as accounts pick up new collabs.");
+      load(); if(watchOpen[id]) renderWatch(id);     // refresh the panel if it's open
+    } else if(tries>90){            // ~7.5 min safety stop
+      clearInterval(iv); btn.disabled=false; btn.textContent=o;
+      toast("Still working in the background — check the Watch-list shortly.");
+    }
+  }, 5000);
+}
+async function resetCreator(id,btn){
+  if(!confirm("Wipe this creator's old trends and scraped posts, then re-scan fresh? (Their own posts are kept.)")) return;
+  const o=btn.textContent; btn.disabled=true; btn.textContent="Resetting…";
+  const before=await _lastScan(id);
+  toast("Clearing the old lane and re-scanning — a minute or two");
+  try{ await fetch("/api/reset/"+id,{method:"POST"}); }
+  catch(e){ toast("Couldn't start reset"); btn.disabled=false; btn.textContent=o; return; }
+  _awaitScan(id, before, btn, o);
+}
+
+const _addBtn = document.getElementById("addBtn");
+if(_addBtn) _addBtn.onclick = async ()=>{
+  const name=val("f-name");
+  const EXPLATS=["instagram","tiktok","youtube","twitch"];
+  const exByPlat={}; let allEx=[];
+  EXPLATS.forEach(p=>{
+    const arr=val("f-ex-"+p).split(/[, ]+/).map(s=>s.trim().replace(/^@/,"")).filter(Boolean);
+    if(arr.length) exByPlat[p]=arr;
+    allEx=allEx.concat(arr);
+  });
+  if(!name||!allEx.length){toast("Add a name and at least one account they post like");return;}
+  if(!activeGroup){toast("Create or select a group first");return;}
+  const formats=[...document.querySelectorAll(".f-fmt:checked")].map(c=>c.value);
+  if(!formats.length){toast("Pick at least one content format");return;}
+  const self = handleSeeds("", val("f-instagram"));
+  if(!self.length){toast("Add a TikTok or Instagram username");return;}
+  if(!val("f-cpw")){toast("Set a link password");return;}
+  const gender = (document.querySelector('input[name="f-gender"]:checked')||{}).value || "";
+  const age = val("f-age");
+  toast(`Adding ${name} — mapping ${allEx.length} account${allEx.length>1?'s':''}…`);
+  const igEx = exByPlat.instagram||[];
+  const res = await fetch("/api/creators",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({name,example:igEx[0]||allEx[0],example_creators:igEx,examples_by_platform:exByPlat,group_id:activeGroup,formats,gender,age,seeds:self,password:val("f-cpw")})});
+  if(res.ok){ const j=await res.json();
+    ["f-name","f-ex-instagram","f-ex-tiktok","f-ex-youtube","f-ex-twitch","f-instagram","f-cpw","f-age"].forEach(id=>document.getElementById(id).value="");
+    document.querySelectorAll(".f-fmt").forEach(c=>c.checked=false);
+    document.querySelector('input[name="f-gender"][value=""]').checked=true;
+    showTab("roster"); toast(`${name} added — finding similar creators, then scanning…`);
+    // backend builds the watch-list from the example, THEN runs the first scan — so we
+    // don't kick a scan here against an empty watch-list. Poll the roster to show it land.
+    await load(); }
+  else { toast((await res.json()).error||"Something went wrong"); }
+};
+
+// Build 'self' account seeds from the two platform fields (comma/space separated handles).
+function handleSeeds(tk, ig){
+  const out=[];
+  (tk||"").split(/[,\s]+/).filter(Boolean).forEach(h=>out.push({platform:"tiktok",kind:"self",value:h.replace(/^@/,"")}));
+  (ig||"").split(/[,\s]+/).filter(Boolean).forEach(h=>out.push({platform:"instagram",kind:"self",value:h.replace(/^@/,"")}));
+  return out;
+}
+
+
+// ---- Brand deals ----
+const dealsOpen = {};
+const OFFER = {paid:"Paid", gifting:"Gifting", affiliate:"Affiliate", unclear:"Unclear"};
+async function toggleDeals(id,btn){
+  const el=document.getElementById("deals-"+id);
+  dealsOpen[id]=!dealsOpen[id];
+  if(btn) btn.classList.toggle("on", dealsOpen[id]);
+  if(!dealsOpen[id]){ el.style.display="none"; return; }
+  el.style.display="block"; renderDeals(id);
+}
+async function renderDeals(id){
+  const el=document.getElementById("deals-"+id);
+  el.innerHTML='<div class="empty">Loading…</div>';
+  const d=await (await fetch("/api/deals/"+id)).json();
+  const addr=`<div class="dealaddr">Brand inbox · <b>${esc(d.address)}</b>
+     <button class="tiny ghost" onclick='copyAddr(${JSON.stringify(d.address)},this)'>Copy</button>
+     <span class="muted2">${d.live?"live inbox":"demo deals"} — put this in their bio</span></div>`;
+  const head=`<div class="streamhead">Brand deals · best first
+     <button class="tiny" onclick="checkDeals(${id},this)">Check for new</button></div>`;
+  if(!d.deals.length){ el.innerHTML=addr+head+'<div class="empty">No deals yet. Hit “Check for new”.</div>'; return; }
+  el.innerHTML=addr+head+d.deals.map(x=>dealRow(x,id)).join("");
+}
+function dbar(label,val){
+  return `<div class="dbar"><span class="dbl">${label}</span>
+    <span class="dtrack"><span class="dfill" style="width:${val}%"></span></span>
+    <span class="dval">${val}</span></div>`;
+}
+const DEAL_STEPS=[["interested","Interested"],["passed","Pass"]];
+function dealRow(x,cid){
+  const flags=(x.flags&&x.flags.length)?`<div class="dflags">⚠ ${x.flags.map(esc).join(" · ")}</div>`:"";
+  const amt=x.offer_amount?` · ${esc(x.offer_amount)}`:"";
+  const deliv=x.deliverables?`<div class="muted2" style="margin-top:4px">Wants: ${esc(x.deliverables)}</div>`:"";
+  const seg=DEAL_STEPS.map(([v,l])=>`<button class="segbtn ${x.status===v?'on':''}"
+      onclick="dealStatus(${x.id},'${x.status===v?'new':v}',${cid})">${l}</button>`).join("");
+  const replied=(x.reply_status&&x.reply_status!=="none")
+    ? `<div class="drep">✓ Replied: ${esc(x.reply_status)}${x.replied_by?` (by ${esc(x.replied_by)})`:""}</div>` : "";
+  return `<div class="deal ${x.status==='passed'?'dim':''}">
+    <div class="dtop">
+      <div><span class="dbrand">${esc(x.brand)}</span> <span class="meta">${OFFER[x.offer_type]||x.offer_type}${amt}</span></div>
+      <div class="seg">${seg}</div>
+    </div>
+    ${dbar("Offer",x.value_score)}${dbar("Fit",x.fit_score)}
+    <div class="dsum">${esc(x.summary)}</div>${deliv}${flags}${replied}
+  </div>`;
+}
+async function checkDeals(id,btn){ if(btn){btn.disabled=true;btn.innerHTML='<span class="spin"></span>Checking';}
+  const r=await (await fetch("/api/deals/scan/"+id,{method:"POST"})).json();
+  await renderDeals(id); toast(r.new?`${r.new} new deal${r.new>1?"s":""}`:"No new deals"); }
+async function dealStatus(did,status,cid){
+  await fetch("/api/deals/item/"+did,{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({status})});
+  renderDeals(cid); }
+function copyAddr(a,btn){ navigator.clipboard?.writeText(a); const o=btn.textContent;
+  btn.textContent="Copied"; setTimeout(()=>btn.textContent=o,1500); }
+
+// ---- Edit a creator (reuses the modal) ----
+// platform -> sub-formats. [token, label, soon?]. soon = not collecting data yet.
+const PLATFORMS=[
+  {name:"Instagram",subs:[["reels","Reels"],["post","Posts"]]},
+  {name:"TikTok",subs:[["tiktok","Videos",true]]},
+  {name:"YouTube",subs:[["yt_long","Long-form"],["yt_short","Shorts"],["yt_live","Streaming",true]]},
+  {name:"Twitch",subs:[["stream","Streaming"]]},
+];
+const EX_EG={instagram:"e.g. username1, username2",tiktok:"e.g. username1, username2",youtube:"e.g. channel1, channel2",twitch:"e.g. streamer1, streamer2"};
+function platformPicker(cls,checked,withEx){
+  return PLATFORMS.map(p=>{
+    const key=p.name.toLowerCase();
+    const open=p.subs.some(s=>checked.has(s[0]));
+    const body=p.subs.map(s=>`<label class="chk"><input type="checkbox" class="${cls}" value="${s[0]}" ${checked.has(s[0])?"checked":""}> ${s[1]}${s[2]?' <span class="soon">soon</span>':''}</label>`).join("");
+    const ex=withEx?`<div class="plat-ex-wrap"><label class="plat-ex-lab">Accounts they post like on ${p.name}</label><input type="text" class="plat-ex" id="f-ex-${key}" placeholder="${EX_EG[key]}"></div>`:"";
+    return `<div class="plat${open?' open':''}"><button type="button" class="plat-h" onclick="togglePlat(this)">${p.name}<span class="chev">▾</span></button><div class="plat-body">${body}${ex}</div></div>`;
+  }).join("");
+}
+function togglePlat(b){b.parentElement.classList.toggle('open');}
+(function(){const el=document.getElementById('f-plats'); if(el) el.innerHTML=platformPicker('f-fmt', new Set(), true);})();
+
+function openEdit(id){
+  const c = CREATORS[id]; if(!c) return;
+  const fmts = c.formats || [];
+  const selfs = (c.seeds||[]).filter(s=>s.kind==="self");
+  const tkv = selfs.filter(s=>s.platform==="tiktok").map(s=>s.value).join(", ");
+  const igv = selfs.filter(s=>s.platform==="instagram").map(s=>s.value).join(", ");
+  const fmtChk = platformPicker("e-fmt", new Set(fmts));
+  const m=document.getElementById("modal");
+  m.innerHTML = `<h3>Edit ${esc(c.name)}</h3><div class="ksub">name · formats · accounts · link</div>
+    <label>Name</label><input type="text" id="e-name" value="${esc(c.name)}">
+    <label>Gender <span class="opt">— sharpens trend filtering</span></label>
+    <div class="fmtrow">
+      <label class="chk"><input type="radio" name="e-gender" value="man" ${c.gender==="man"?"checked":""}> Man</label>
+      <label class="chk"><input type="radio" name="e-gender" value="woman" ${c.gender==="woman"?"checked":""}> Woman</label>
+      <label class="chk"><input type="radio" name="e-gender" value="" ${(c.gender!=="man"&&c.gender!=="woman")?"checked":""}> Prefer not to say</label>
+    </div>
+    <label>Creator's age <span class="opt">— finds similar-age creators (±5 yrs)</span></label>
+    <input type="number" id="e-age" min="13" max="99" value="${c.age||''}" placeholder="e.g. 20" style="max-width:120px">
+    <label>Platforms &amp; content</label><div class="platgrid">${fmtChk}</div>
+    <label class="sub">Instagram username</label><input type="text" id="e-instagram" value="${esc(igv)}" placeholder="e.g. minamoves">
+    <div class="hint">Just the username (no “@”). Leave one blank if they're not on that platform.</div>
+    <label>Link password</label><input type="text" id="e-cpw" value="${esc(c.password||"")}">
+    <div class="hint">Blank = the link opens for anyone.</div>
+    <div class="closeb">
+      <button onclick="saveEdit(${id},this)">Save changes</button>
+      <button class="ghost" onclick="closeBrief()">Cancel</button></div>`;
+  document.getElementById("scrim").classList.add("on");
+}
+async function saveEdit(id,btn){
+  const name=val("e-name");
+  if(!name){toast("Name is required");return;}
+  const formats=[...document.querySelectorAll(".e-fmt:checked")].map(c=>c.value);
+  if(!formats.length){toast("Pick at least one content format");return;}
+  const seeds = handleSeeds("", val("e-instagram"));
+  const gender = (document.querySelector('input[name="e-gender"]:checked')||{}).value || "";
+  const age = val("e-age");
+  btn.disabled=true; btn.innerHTML='<span class="spin"></span>Saving';
+  const res = await fetch("/api/creators/"+id,{method:"PATCH",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({name,formats,gender,age,seeds,password:val("e-cpw")})});
+  if(res.ok){ const r=await res.json(); closeBrief(); await load();
+    toast(r.rescan?"Saved — their new lane refreshes automatically":"Saved"); }
+  else { btn.disabled=false; btn.textContent="Save changes"; toast((await res.json()).error||"Couldn't save"); }
+}
+
+// ---- the viral video to recreate (no brief, no LLM — same as the creator view) ----
+function openBrief(cid,unitKey,label){
+  const t=(window._TR&&window._TR[cid+"|"+unitKey])||{};
+  const ex=t.examples||[];
+  const s=document.getElementById("scrim"), m=document.getElementById("modal");
+  s.classList.add("on");
+  m.innerHTML=`<h3>${esc(label)}</h3>
+    ${heroVideo(ex[0], t.medium) || `<div class="ksub">No example captured yet — hit Scan now to pull one.</div>`}
+    ${t.description?`<div class="sec"><h4>What this post is</h4><p>${esc(t.description)}</p></div>`:""}
+    ${(t.platforms&&t.platforms.length)?`<div class="sec"><h4>Seen on</h4><p>📍 ${t.platforms.map(esc).join(" · ")}</p></div>`:""}
+    ${(t.sound && t.unit_type!=="audio")?`<div class="sec"><h4>Sound to use</h4><p>🎵 ${esc(t.sound)}</p></div>`:""}
+    <div class="closeb">
+      <button onclick='addPlan(${cid},${aj(unitKey)},${aj(label)},this)'>Add to plan</button>
+      <button class="ghost" onclick="closeBrief()">Close</button></div>`;
+}
+function vidId(u){ const m=(u||"").match(/video\/(\d+)/); return m?m[1]:""; }
+function heroVideo(e, medium){
+  if(!e||!e.url) return "";
+  const pic = medium!=='video';
+  const u=e.url, tt=/tiktok\.com/.test(u), ig=/instagram\.com/.test(u);
+  const meta=`@${esc(e.author)} · ${(e.likes!=null?e.likes:e.views).toLocaleString()} likes`;
+  let frame="";
+  if(tt){ const id=vidId(u);
+    if(id) frame=`<iframe src="https://www.tiktok.com/embed/v2/${id}" loading="eager" allow="autoplay; encrypted-media; fullscreen" style="width:100%;max-width:325px;height:560px;border:0;border-radius:12px;display:block;margin:0 auto"></iframe>`; }
+  else if(ig){ const base=u.split("?")[0].replace(/\/+$/,"");
+    frame=`<iframe src="${esc(base)}/embed" loading="eager" scrolling="no" style="width:100%;max-width:340px;height:${pic?620:540}px;border:0;border-radius:12px;display:block;margin:0 auto"></iframe>`; }
+  const head = medium==='carousel' ? "🖼 Recreate this carousel" : medium==='photo' ? "📷 Recreate this photo" : "▶ Recreate this video";
+  return `<div class="sec"><h4>${head}</h4>${frame}
+    <a class="exlink" href="${esc(u)}" target="_blank" rel="noopener">Open on ${tt?"TikTok":ig?"Instagram":"app"} — ${meta}</a></div>`;
+}
+async function addPlan(cid,unitKey,label,btn){
+  const r = await (await fetch("/api/plan/"+cid,{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({title:label,unit_key:unitKey})})).json();
+  if(r && r.id) _locallyAdded.add(r.id);   // don't re-toast our own add
+  if(btn){btn.textContent="Added";btn.disabled=true;}
+  toast("Added to the plan");
+}
+function closeBrief(){ document.getElementById("scrim").classList.remove("on"); }
+const val = id => document.getElementById(id).value.trim();
+const fmt = n => { n=+n||0; return n>=1e6 ? (n/1e6).toFixed(1).replace(/\.0$/,'')+"M" : n.toLocaleString(); };
+const esc = s => (s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+// JSON encoded safe for a single-quoted onclick="" attr (apostrophes in titles broke buttons)
+const aj = x => JSON.stringify(x).replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+init();
+</script>
+</body>
+</html>

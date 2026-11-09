@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: jsent-desk
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+    envVars:
+      - key: JSENT_PASSWORD
+        sync: false
+      - key: JSENT_SECRET
+        generateValue: true
